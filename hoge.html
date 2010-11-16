@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script type="text/javascript" src="../../jquery.js"></script>
+</head>
+<body>
+
+<label for="url">URL:</label><input id="url" type="text" /><br />
+<label for="title">TITLE:</label><input id="title" type="text" /><br />
+<input id="addLink" value="Add" type="button" />
+<input id="clearLinks" value="clear" type="button" />
+
+<ul id="linkList"></ul>
+
+<script type="text/javascript">
+
+var AddLinks = function( option, links ){
+	this.links = links || [];
+	if( option ) this.config ( option );
+	return this;
+};
+AddLinks.prototype = {
+	
+	EVENT_CHANGE : "change",
+	EVENT_ERROR : "error",
+
+	ERROR_EMPTY : "empty",
+	ERROR_LIMIT_OVER : "limitOver",
+	ERROR_DOUBLED : "doubled",
+	
+
+	option : {
+		urlInput:"#url",
+		titleInput:"#title",
+		addButton:"#addLink",
+		clearButton:"#clearLinks",
+		linkList:"#linkList",
+		deleteButton:"#linkList .delete",
+		limit:10
+	},
+
+	links : [],
+	urlInput : null,
+	titleInput : null,
+
+	config : function( option ){
+		this.option = $.extend( {}, this.option, option );
+	},
+	run : function(){
+		this.urlInput = $(this.option.urlInput);
+		this.titleInput = $(this.option.titleInput);
+		
+		this.urlInput.bind( "keydown", $.proxy( this._onKeyDownInput, this ) );
+		this.titleInput.bind( "keydown", $.proxy( this._onKeyDownInput, this ) );
+		$(this.option.addButton).click( $.proxy( this._onClickAddButton, this ) );
+		$(this.option.clearButton).click( $.proxy( this.clear, this ) );
+		$(this.option.deleteButton).live( "click", $.proxy( this._onClickDeleteButton, this ) );
+
+
+		$(this).bind( this.EVENT_CHANGE, $.proxy( this.refreshList, this ) );
+		
+
+		return this;
+	},
+	_onKeyDownInput : function( e ){
+		if( e.keyCode !== 13 ) return;
+		this._onClickAddButton();
+	},
+	_onClickAddButton : function( e ){
+		this.add(
+			this.urlInput.val(),
+			this.titleInput.val()
+		);
+	},
+	_onClickDeleteButton : function( e ){
+		this.removeByUrl( $(e.target).data("url") );
+	},
+	_error : function( message ){
+		$(this).trigger( this.EVENT_ERROR, message );
+		return this;
+	},
+	_escape : function( str ){
+		return $("<span>").text(str).html();
+	},
+	_find : function( url ){
+		var _f = false;
+		$.each( this.links, function( i, o ){
+			if( o.url === url ){ _f = true; return false; }
+		});
+		return _f;
+	},
+	add : function( url, title ){
+		switch( true ){
+			case ( !url || !title ) :
+				this._error( this.ERROR_EMPTY );
+				return false;
+				break;
+			case ( this.links.length >= this.option.limit ) :
+				this._error( this.ERROR_LIMIT_OVER );
+				return false;
+				break;
+			case ( this._find( url ) ) :
+				this._error( this.ERROR_DOUBLED );
+				return false;
+				break;
+			default :
+				this.links.push({
+					url : this._escape( this.urlInput.val() ),
+					title : this._escape( this.titleInput.val() )
+				});
+				$(this).trigger( this.EVENT_CHANGE );
+				this.urlInput.val("");
+				this.titleInput.val("");
+				return true;
+				break;
+		}
+		return false;
+	},
+	removeByUrl : function( url ){
+		this.links = $.grep( this.links, function( o, i ){
+			return o.url !== url;
+		});
+		$(this).trigger( this.EVENT_CHANGE );
+		return this;
+	},
+	clear : function(){
+		this.links = [];
+		$(this).trigger( this.EVENT_CHANGE );
+		return this;
+	},
+	refreshList : function(){
+		var list = $( this.option.linkList ),
+			tmpl = '<li><a href="{{url}}">{{title}}</a> <input type="button" class="delete" value="X" data-url="{{url}}" /></li>';
+		list.html("");
+		$.each( this.links, function( i, o ){
+			var html = tmpl
+			.replace( /{{title}}/g, o.title )
+			.replace( /{{url}}/g, o.url );
+			$(html).appendTo( list );
+		});
+		return this;
+	},
+	bind : function( name, func ){
+		$(this).bind( name, func );
+		return this;
+	}
+};
+
+var mylinks = new AddLinks;
+
+mylinks.bind( mylinks.EVENT_ERROR, function( e, err ){
+	console.log( err );
+});
+
+mylinks.run();
+
+
+</script>
+	
+</body>
+</html>
