@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script type="text/javascript" src="../../jquery.js"></script>
+	<script type="text/javascript" src="./addlinks.js"></script>
+</head>
+<body>
+
+<label for="url">URL:</label><input id="url" type="text" /><br />
+<label for="title">TITLE:</label><input id="title" type="text" /><br />
+<input id="addLink" value="Add" type="button" />
+<input id="clearLinks" value="clear" type="button" />
+<ul id="linkList"></ul>
+
+<p id="result"></p>
+
+<script type="text/javascript">
+
+
+var mylinks = new AddLinks({
+	urlInput : "#url",
+	titleInput : "#title",
+	addButton : "#addLink",
+	clearButton : "#clearLinks",
+	linkList : "#linkList",
+	deleteButton : "#linkList .delete"
+});
+mylinks.bind( mylinks.EVENT_CHANGE, function( e ){
+	$("#result").html( this.toString() );
+});
+mylinks.run();
+
+</script>
+	
+</body>
+</html>

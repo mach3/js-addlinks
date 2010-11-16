@@ -1,21 +1,10 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title></title>
-	<script type="text/javascript" src="../../jquery.js"></script>
-</head>
-<body>
-
-<label for="url">URL:</label><input id="url" type="text" /><br />
-<label for="title">TITLE:</label><input id="title" type="text" /><br />
-<input id="addLink" value="Add" type="button" />
-<input id="clearLinks" value="clear" type="button" />
-
-<ul id="linkList"></ul>
-
-<script type="text/javascript">
-
+/*!
+ * AddLinks
+ * Copyright (C) Matsukaze. All rights reserved.
+ * @version 1.0
+ * @require jQuery 1.4 or later
+ * @author mach3
+ */
 var AddLinks = function( option, links ){
 	this.links = links || [];
 	if( option ) this.config ( option );
@@ -32,12 +21,12 @@ AddLinks.prototype = {
 	
 
 	option : {
-		urlInput:"#url",
-		titleInput:"#title",
-		addButton:"#addLink",
-		clearButton:"#clearLinks",
-		linkList:"#linkList",
-		deleteButton:"#linkList .delete",
+		urlInput:"#addLinksUrlInput",
+		titleInput:"#addLinksTitleInput",
+		addButton:"#addLinksAddButton",
+		clearButton:"#addLinksClearButton",
+		linkList:"#addLinksList",
+		deleteButton:"#addLinksList .delete",
 		limit:10
 	},
 
@@ -45,23 +34,27 @@ AddLinks.prototype = {
 	urlInput : null,
 	titleInput : null,
 
+	/**
+	 * Configure the selectos, or some options.
+	 * @param {object} option Confiuration option
+	 * @return {object} AddLinks object
+	 */
 	config : function( option ){
 		this.option = $.extend( {}, this.option, option );
 	},
+	/**
+	 * Start to observe ( add event listeners )
+	 * @return {object} AddLinks object
+	 */
 	run : function(){
 		this.urlInput = $(this.option.urlInput);
 		this.titleInput = $(this.option.titleInput);
-		
 		this.urlInput.bind( "keydown", $.proxy( this._onKeyDownInput, this ) );
 		this.titleInput.bind( "keydown", $.proxy( this._onKeyDownInput, this ) );
 		$(this.option.addButton).click( $.proxy( this._onClickAddButton, this ) );
 		$(this.option.clearButton).click( $.proxy( this.clear, this ) );
 		$(this.option.deleteButton).live( "click", $.proxy( this._onClickDeleteButton, this ) );
-
-
 		$(this).bind( this.EVENT_CHANGE, $.proxy( this.refreshList, this ) );
-		
-
 		return this;
 	},
 	_onKeyDownInput : function( e ){
@@ -75,7 +68,7 @@ AddLinks.prototype = {
 		);
 	},
 	_onClickDeleteButton : function( e ){
-		this.removeByUrl( $(e.target).data("url") );
+		this.removeByUrl( this._escape( $(e.target).data("url") ) );
 	},
 	_error : function( message ){
 		$(this).trigger( this.EVENT_ERROR, message );
@@ -91,6 +84,12 @@ AddLinks.prototype = {
 		});
 		return _f;
 	},
+	/**
+	 * Add a new link
+	 * @param {string} url URL of the page
+	 * @param {string} title Title of the page
+	 * @return {boolean} If added successfully or not
+	 */
 	add : function( url, title ){
 		switch( true ){
 			case ( !url || !title ) :
@@ -118,6 +117,11 @@ AddLinks.prototype = {
 		}
 		return false;
 	},
+	/**
+	 * Remove a link from the list by URL
+	 * @param {string} url URL of the link deleted
+	 * @return {object} AddLinks object
+	 */
 	removeByUrl : function( url ){
 		this.links = $.grep( this.links, function( o, i ){
 			return o.url !== url;
@@ -125,11 +129,19 @@ AddLinks.prototype = {
 		$(this).trigger( this.EVENT_CHANGE );
 		return this;
 	},
+	/**
+	 * Clear all links
+	 * @return {object} AddLinks object
+	 */
 	clear : function(){
 		this.links = [];
 		$(this).trigger( this.EVENT_CHANGE );
 		return this;
 	},
+	/**
+	 * Refresh the list of the links
+	 * @return {object} AddLinks object
+	 */
 	refreshList : function(){
 		var list = $( this.option.linkList ),
 			tmpl = '<li><a href="{{url}}">{{title}}</a> <input type="button" class="delete" value="X" data-url="{{url}}" /></li>';
@@ -142,22 +154,27 @@ AddLinks.prototype = {
 		});
 		return this;
 	},
+	/**
+	 * Wrapper of jQuery.bind
+	 * @return {object} AddLinks object
+	 */
 	bind : function( name, func ){
 		$(this).bind( name, func );
 		return this;
+	},
+	/**
+	 * Return the link collection as JSON String
+	 * @return {string} JSON String
+	 */
+	toString : function(){
+		var str = "[";
+		$.each( this.links, function( i, o ){
+			if ( !! i ){ str += ","; }
+			str +=  '{"url":"{{url}}","title":"{{title}}"}'
+			.replace("{{url}}", o.url )
+			.replace("{{title}}", o.title);
+		} );
+		str += "]";
+		return str;
 	}
 };
-
-var mylinks = new AddLinks;
-
-mylinks.bind( mylinks.EVENT_ERROR, function( e, err ){
-	console.log( err );
-});
-
-mylinks.run();
-
-
-</script>
-	
-</body>
-</html>
