@@ -1,7 +1,7 @@
 /*!
  * AddLinks
  * Copyright (C) Matsukaze. All rights reserved.
- * @version 1.0
+ * @version 1.1
  * @require jQuery 1.4 or later
  * @author mach3
  */
@@ -21,12 +21,12 @@ AddLinks.prototype = {
 	
 
 	option : {
-		urlInput:"#addLinksUrlInput",
-		titleInput:"#addLinksTitleInput",
-		addButton:"#addLinksAddButton",
-		clearButton:"#addLinksClearButton",
-		linkList:"#addLinksList",
-		deleteButton:"#addLinksList .delete",
+		urlInput:"#linkUrlInput",
+		titleInput:"#linkTitleInput",
+		addButton:"#linkAddButton",
+		clearButton:"#linkClearButton",
+		list:"#linkList",
+		deleteButton:"#linkList .delete",
 		limit:10
 	},
 
@@ -143,7 +143,7 @@ AddLinks.prototype = {
 	 * @return {object} AddLinks object
 	 */
 	refreshList : function(){
-		var list = $( this.option.linkList ),
+		var list = $( this.option.list ),
 			tmpl = '<li><a href="{{url}}">{{title}}</a> <input type="button" class="delete" value="X" data-url="{{url}}" /></li>';
 		list.html("");
 		$.each( this.links, function( i, o ){

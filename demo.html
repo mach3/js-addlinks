@@ -19,14 +19,7 @@
 <script type="text/javascript">
 
 
-var mylinks = new AddLinks({
-	urlInput : "#url",
-	titleInput : "#title",
-	addButton : "#addLink",
-	clearButton : "#clearLinks",
-	linkList : "#linkList",
-	deleteButton : "#linkList .delete"
-});
+var mylinks = new AddLinks();
 mylinks.bind( mylinks.EVENT_CHANGE, function( e ){
 	$("#result").html( this.toString() );
 });
